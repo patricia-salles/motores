@@ -86,3 +86,110 @@ from sklearn.linear_model import LinearRegression
 ###criar o objeto da regressão linear
 regressor=LinearRegression()
 regressor.fit(x_train, y_train)
+
+### Predict the test set results
+y_pred=regressor.predict(x_test)
+
+###Backward elimination
+'''
+Linear models with independently and identically distributed errors, and for 
+errors with heteroscedasticity or autocorrelation. This module allows 
+estimation by ordinary least squares (OLS), weighted least squares (WLS), 
+generalized least squares (GLS), and feasible generalized least squares 
+with autocorrelated AR(p) errors.
+
+OLS chooses the parameters of a linear function of a set of explanatory 
+variables by the principle of least squares: minimizing the sum of the 
+squares of the differences between the observed dependent variable (values 
+of the variable being predicted) in the given dataset and those predicted by 
+the linear function.
+
+Geometrically, this is seen as the sum of the squared distances, parallel to 
+the axis of the dependent variable, between each data point in the set and 
+the corresponding point on the regression surface – the smaller the differences,
+the better the model fits the data. 
+'''
+import statsmodels.api as sm
+back=np.append(arr=np.ones((50,1)).astype(int), values = x, axis =1)
+back_opt=back[:, [0,1,2,3,4,5]]
+regressor_ols=sm.OLS(endog=y, exog=back_opt).fit() 
+regressor_ols.summary()
+
+###remove index 2 because p value
+back_opt=back[:, [0,1,3,4,5]]
+regressor_ols=sm.OLS(endog=y, exog=back_opt).fit() 
+regressor_ols.summary()
+
+###remove index 1 because p value
+back_opt=back[:, [0,3,4,5]]
+regressor_ols=sm.OLS(endog=y, exog=back_opt).fit() 
+regressor_ols.summary()
+
+###remove index 4 because p value
+back_opt=back[:, [0,3,5]]
+regressor_ols=sm.OLS(endog=y, exog=back_opt).fit() 
+regressor_ols.summary()
+
+###remove index 5 because p value
+back_opt=back[:, [0,3]]
+regressor_ols=sm.OLS(endog=y, exog=back_opt).fit() 
+regressor_ols.summary()
+
+###create a new dataframe with only important variables after backward elimination
+X_new = back[:, [0,3]] 
+y_pred_ols = regressor_ols.predict(X_new)
+
+'''
+
+if you are also interested in some automatic implementations of Backward 
+Elimination in Python, please find two of them below:
+
+Backward Elimination with p-values only:
+
+import statsmodels.formula.api as sm
+def backwardElimination(x, sl):
+    numVars = len(x[0])
+    for i in range(0, numVars):
+        regressor_OLS = sm.OLS(y, x).fit()
+        maxVar = max(regressor_OLS.pvalues).astype(float)
+        if maxVar > sl:
+            for j in range(0, numVars - i):
+                if (regressor_OLS.pvalues[j].astype(float) == maxVar):
+                    x = np.delete(x, j, 1)
+    regressor_OLS.summary()
+    return x
+ 
+SL = 0.05
+X_opt = X[:, [0, 1, 2, 3, 4, 5]]
+X_Modeled = backwardElimination(X_opt, SL)
+Backward Elimination with p-values and Adjusted R Squared:
+
+import statsmodels.formula.api as sm
+def backwardElimination(x, SL):
+    numVars = len(x[0])
+    temp = np.zeros((50,6)).astype(int)
+    for i in range(0, numVars):
+        regressor_OLS = sm.OLS(y, x).fit()
+        maxVar = max(regressor_OLS.pvalues).astype(float)
+        adjR_before = regressor_OLS.rsquared_adj.astype(float)
+        if maxVar > SL:
+            for j in range(0, numVars - i):
+                if (regressor_OLS.pvalues[j].astype(float) == maxVar):
+                    temp[:,j] = x[:, j]
+                    x = np.delete(x, j, 1)
+                    tmp_regressor = sm.OLS(y, x).fit()
+                    adjR_after = tmp_regressor.rsquared_adj.astype(float)
+                    if (adjR_before >= adjR_after):
+                        x_rollback = np.hstack((x, temp[:,[0,j]]))
+                        x_rollback = np.delete(x_rollback, j, 1)
+                        print (regressor_OLS.summary())
+                        return x_rollback
+                    else:
+                        continue
+    regressor_OLS.summary()
+    return x
+ 
+SL = 0.05
+X_opt = X[:, [0, 1, 2, 3, 4, 5]]
+X_Modeled = backwardElimination(X_opt, SL)
+
