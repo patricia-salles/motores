@@ -74,5 +74,17 @@ classifier.add(Dense(units=6, kernel_initializer='uniform', activation = 'relu')
 classifier.add(Dense(units=1, kernel_initializer='uniform', activation = 'sigmoid'))   
 ## units=1 one vs all método - se a resposta tiver mais de duas categorias de resposta, p.ex 4 units=4
 ## activation = sigmoid, mas se tiver mais de duas categorias de resposta, aí é soft max function
+
+## compilar a rede neural
+classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+## metrics = similar a função de perda, foi usada a acurácia
+## loss = o objeto que o modelo quer minimizar - binary_crossentropy pq temos duas categorias de resposta
+## optmizer = adam = um algoritmo de 1ª ordem baseada em gradiente de funções objetivas estocásticas
+## usado para problemas com muito ruido e gradientes esparsos
+
+## Fit modelo de rede neural na base de treinamento
+classifier.fit()
+
+
 # Fazendo as predições da base de teste
 y_pred=classifier.predict(X_test)
