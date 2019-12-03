@@ -5,7 +5,7 @@ Created on Wed Nov 27 22:37:28 2019
 @author: pati_
 """
 
- # Importing the libraries
+# Importing the libraries
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -83,8 +83,23 @@ classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accur
 ## usado para problemas com muito ruido e gradientes esparsos
 
 ## Fit modelo de rede neural na base de treinamento
-classifier.fit()
+classifier.fit(X_train, y_train, batch_size=10, nb_epoch=100)
 
+#The batch size defines the number of samples that will be propagated through the network.
+#For instance, let's say you have 1050 training samples and you want to set up a batch_size 
+#equal to 100. The algorithm takes the first 100 samples (from 1st to 100th) from the 
+#training dataset and trains the network. Next, it takes the second 100 samples 
+#(from 101st to 200th) and trains the network again. We can keep doing this procedure 
+#until we have propagated all samples through of the network. 
+#Epochs represents the number of times we’re going to pass our full dataset through 
+#the ANN. Batch_size is the number of observations after which the weights will be updated.
 
-# Fazendo as predições da base de teste
+## Fazer as predições do modelo na base teste
 y_pred=classifier.predict(X_test)
+y_pred=(y_pred>0.5) ## os 4 primeiros clientes não deixarão o banco,o quinto sim
+
+## Matriz de confusão
+from sklearn.metrics import confusion_matrix
+cm=confusion_matrix(y_test, y_pred)
+## resultado 1547 + 130 predições corretas e 275 + 48 predições incorretas
+## (1547 +130)/2000 = 0,838 acurácia próxima da acurácia do modelo na base de treinamento
